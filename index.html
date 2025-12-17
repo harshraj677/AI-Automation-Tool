@@ -61,6 +61,15 @@
                     </div>
                 </div>
 
+                <!-- Streaming Toggle -->
+                <div class="form-group">
+                    <label class="toggle-container">
+                        <input type="checkbox" id="streamingToggle" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">⚡ Enable Real-time Streaming (Recommended)</span>
+                    </label>
+                </div>
+
                 <!-- Submit Button -->
                 <button type="submit" id="submitBtn" class="btn-primary">
                     <span class="btn-text">Process Text</span>
@@ -82,7 +91,13 @@
             <!-- Output Section -->
             <div id="outputSection" class="output-section hidden">
                 <div class="output-header">
-                    <h2 class="output-title">Result</h2>
+                    <h2 class="output-title">
+                        Result
+                        <span id="streamingIndicator" class="streaming-indicator hidden">
+                            <span class="streaming-dot"></span>
+                            Streaming...
+                        </span>
+                    </h2>
                     <button id="copyBtn" class="btn-copy" title="Copy to clipboard">
                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>

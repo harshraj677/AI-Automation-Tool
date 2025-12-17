@@ -12,6 +12,12 @@ const outputSection = document.getElementById('outputSection');
 const outputContent = document.getElementById('outputContent');
 const copyBtn = document.getElementById('copyBtn');
 const charCount = document.getElementById('charCount');
+const streamingIndicator = document.getElementById('streamingIndicator');
+const streamingToggle = document.getElementById('streamingToggle');
+
+// Streaming state
+let isStreaming = false;
+let streamedText = '';
 
 // ========================================
 // CHARACTER COUNTER
@@ -59,22 +65,29 @@ textForm.addEventListener('submit', async (e) => {
 });
 
 // ========================================
-// MAIN PROCESSING FUNCTION
+// MAIN PROCESSING FUNCTION WITH STREAMING
 // ========================================
 async function processText(text, action) {
     try {
         // Show loading state
         setLoadingState(true);
         hideAlert();
-        hideOutput();
+        showOutput();
+        
+        // Clear previous content
+        streamedText = '';
+        outputContent.textContent = '';
+        outputContent.classList.add('streaming');
+        streamingIndicator.classList.remove('hidden');
         
         // Prepare request payload
         const payload = {
             text: text,
-            action: action
+            action: action,
+            stream: true
         };
         
-        // Make API request
+        // Make streaming API request
         const response = await fetch('api.php', {
             method: 'POST',
             headers: {
@@ -83,12 +96,22 @@ async function processText(text, action) {
             body: JSON.stringify(payload)
         });
         
-        // Parse response
+        if (!response.ok) {
+            throw new Error('API request failed');
+        }
+        
         const data = await response.json();
         
-        // Handle response
-        if (response.ok && data.status === 'success') {
-            displayOutput(data.data);
+        if (data.status === 'success') {
+            // Check if streaming is enabled
+            if (streamingToggle.checked) {
+                // Simulate streaming effect
+                await streamText(data.data);
+            } else {
+                // Display instantly
+                streamedText = data.data;
+                outputContent.textContent = data.data;
+            }
             showAlert('Text processed successfully!', 'success');
         } else {
             throw new Error(data.message || 'An error occurred while processing your request.');
@@ -97,9 +120,46 @@ async function processText(text, action) {
     } catch (error) {
         console.error('Error:', error);
         showAlert(error.message || 'Failed to process text. Please try again.', 'error');
+        outputContent.classList.remove('streaming');
+        streamingIndicator.classList.add('hidden');
     } finally {
         setLoadingState(false);
+        outputContent.classList.remove('streaming');
+        streamingIndicator.classList.add('hidden');
     }
+}
+
+// ========================================
+// STREAMING TEXT ANIMATION
+// ========================================
+async function streamText(text) {
+    isStreaming = true;
+    const words = text.split(' ');
+    
+    for (let i = 0; i < words.length; i++) {
+        if (!isStreaming) break;
+        
+        streamedText += (i > 0 ? ' ' : '') + words[i];
+        outputContent.textContent = streamedText;
+        
+        // Add blinking cursor
+        const cursor = document.createElement('span');
+        cursor.className = 'cursor';
+        outputContent.appendChild(cursor);
+        
+        // Scroll to bottom
+        outputContent.scrollTop = outputContent.scrollHeight;
+        
+        // Variable delay for natural feel (faster for short words)
+        const delay = words[i].length > 8 ? 80 : 50;
+        await new Promise(resolve => setTimeout(resolve, delay));
+        
+        // Remove cursor for next iteration
+        cursor.remove();
+    }
+    
+    isStreaming = false;
+    outputContent.textContent = streamedText;
 }
 
 // ========================================
@@ -148,8 +208,14 @@ function displayOutput(content) {
     }, 100);
 }
 
+function showOutput() {
+    outputSection.classList.remove('hidden');
+}
+
 function hideOutput() {
     outputSection.classList.add('hidden');
+    streamingIndicator.classList.add('hidden');
+    outputContent.classList.remove('streaming');
 }
 
 // ========================================
@@ -197,8 +263,9 @@ document.addEventListener('keydown', (e) => {
         }
     }
     
-    // Escape to clear form
+    // Escape to clear form and stop streaming
     if (e.key === 'Escape') {
+        isStreaming = false;
         textInput.value = '';
         actionSelect.value = '';
         charCount.textContent = '0';
@@ -244,5 +311,6 @@ textInput.addEventListener('input', function() {
 // ========================================
 // INITIALIZATION
 // ========================================
-console.log('Smart Text Assistant loaded successfully!');
-console.log('Tip: Use Ctrl/Cmd + Enter to submit, Escape to clear');
+console.log('🎨 Smart Text Assistant with Streaming loaded!');
+console.log('⚡ Tip: Use Ctrl/Cmd + Enter to submit, Escape to clear');
+console.log('📡 Real-time streaming enabled for better UX');
