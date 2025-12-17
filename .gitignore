@@ -1,0 +1,9 @@
+config.php
+logs.txt
+.env
+*.log
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*~
