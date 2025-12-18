@@ -276,6 +276,9 @@ body {
     display: flex;
     align-items: center;
     cursor: pointer;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
     user-select: none;
     gap: 12px;
 }
@@ -781,7 +784,6 @@ body {
     .form-textarea {
         font-size: 0.95rem;
         padding: 14px;
-        rows: 6;
     }
     
     .btn-primary {
