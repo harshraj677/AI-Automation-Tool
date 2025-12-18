@@ -314,3 +314,25 @@ textInput.addEventListener('input', function() {
 console.log('🎨 Smart Text Assistant with Streaming loaded!');
 console.log('⚡ Tip: Use Ctrl/Cmd + Enter to submit, Escape to clear');
 console.log('📡 Real-time streaming enabled for better UX');
+
+// ========================================
+// BACK TO TOP BUTTON
+// ========================================
+const backToTopButton = document.getElementById('backToTop');
+
+// Show/hide back to top button on scroll
+window.addEventListener('scroll', () => {
+    if (window.pageYOffset > 300) {
+        backToTopButton.classList.add('visible');
+    } else {
+        backToTopButton.classList.remove('visible');
+    }
+});
+
+// Scroll to top when clicked
+backToTopButton.addEventListener('click', () => {
+    window.scrollTo({
+        top: 0,
+        behavior: 'smooth'
+    });
+});
