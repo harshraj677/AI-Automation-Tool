@@ -54,17 +54,21 @@ class PHPHandler(SimpleHTTPRequestHandler):
                 try:
                     data = json.loads(post_data.decode('utf-8'))
                     action = data.get('action', '')
+                    text = data.get('text', '')
                     
-                    # Dummy responses
-                    responses = {
-                        'summarize': "This is a summary of your text. The main points have been condensed into a brief overview that captures the essential information while maintaining clarity and coherence.",
-                        'reply': "Thank you for your message. I appreciate you taking the time to reach out. I've reviewed your input and wanted to provide a thoughtful and professional response. Please let me know if you need any additional information or clarification.",
-                        'bullets': "• Main point from your text has been identified\n• Key information has been extracted and organized\n• Content is presented in clear, concise bullet points\n• Easy to read and understand format\n• Professional presentation of information"
-                    }
+                    # Process text based on action with actual input
+                    if action == 'summarize':
+                        result = self.generate_summary(text)
+                    elif action == 'reply':
+                        result = self.generate_reply(text)
+                    elif action == 'bullets':
+                        result = self.generate_bullets(text)
+                    else:
+                        result = 'Your text has been processed successfully.'
                     
                     response = {
                         'status': 'success',
-                        'data': responses.get(action, 'Your text has been processed successfully.')
+                        'data': result
                     }
                     
                     self.wfile.write(json.dumps(response).encode('utf-8'))
@@ -89,6 +93,70 @@ class PHPHandler(SimpleHTTPRequestHandler):
     def do_OPTIONS(self):
         self.send_response(200)
         self.end_headers()
+    
+    def generate_summary(self, text):
+        """Generate a summary from the input text"""
+        sentences = text.replace('\n', ' ').split('. ')
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        if len(sentences) <= 2:
+            return f"Summary: {text}"
+        
+        # Take first and last sentences, and add word count info
+        words = text.split()
+        summary = f"{sentences[0]}. "
+        
+        if len(sentences) > 3:
+            summary += f"{sentences[-1]}. "
+        
+        summary += f"\n\nKey Stats:\n• Original length: {len(words)} words\n• {len(sentences)} sentences\n• Main topic discussed throughout the text"
+        
+        return summary
+    
+    def generate_reply(self, text):
+        """Generate a professional reply based on input"""
+        # Extract key words for context
+        words = text.lower().split()
+        
+        reply = "Thank you for your message. "
+        
+        if any(word in words for word in ['help', 'assist', 'support']):
+            reply += "I'd be happy to assist you with your request. "
+        elif any(word in words for word in ['question', 'ask', 'wondering']):
+            reply += "That's a great question. "
+        elif any(word in words for word in ['feedback', 'suggestion', 'idea']):
+            reply += "I appreciate your feedback and suggestions. "
+        
+        reply += f"Regarding your message about: \"{text[:100]}{'...' if len(text) > 100 else ''}\"\n\n"
+        reply += "I've carefully reviewed your input and wanted to provide a thoughtful response. "
+        reply += "Please let me know if you need any additional information or clarification on this matter. "
+        reply += "\n\nBest regards"
+        
+        return reply
+    
+    def generate_bullets(self, text):
+        """Convert text into bullet points"""
+        # Split into sentences
+        sentences = text.replace('\n', '. ').split('. ')
+        sentences = [s.strip() for s in sentences if s.strip() and len(s.strip()) > 10]
+        
+        if not sentences:
+            return "• " + text
+        
+        bullets = []
+        for i, sentence in enumerate(sentences[:8]):  # Max 8 bullets
+            # Clean up sentence
+            sentence = sentence.strip()
+            if not sentence.endswith('.'):
+                sentence += '.'
+            bullets.append(f"• {sentence}")
+        
+        result = "\n".join(bullets)
+        
+        if len(sentences) > 8:
+            result += f"\n\n... and {len(sentences) - 8} more points from your text"
+        
+        return result
     
     def log_message(self, format, *args):
         # Custom log format
